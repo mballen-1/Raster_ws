@@ -22,7 +22,7 @@ Complete la tabla:
 
 | Integrante | github nick |
 |------------|-------------|
-|            |             |
+|     Miguel Ángel Ballén       | mballeng91            |
 
 ## Discusión
 
