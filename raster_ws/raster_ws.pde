@@ -81,6 +81,42 @@ void triangleRaster() {
   }
 }
 
+Vector findLowOfTwoVectors(Vector a, Vector b, String search){
+  if(search == "x"){
+   if(a.x() < b.x()){
+     return a;
+   }
+    return b;
+  }
+  else{
+    if(search == "y"){
+      if(a.y() < b.y()){
+        return a;
+      }
+      return b;
+    }
+  }
+  return new Vector(0,0);
+}
+
+
+Vector findLowXOfAll(){
+  return(findLowOfTwoVectors(findLowOfTwoVectors(v1,v2, "x"),v3, "x"));  
+}
+
+Vector findLowYOfAll(){
+  return(findLowOfTwoVectors(findLowOfTwoVectors(v1,v2, "y"),v3, "y"));  
+}
+
+
+
+boolean isInTriangle(Vector x, Vector y){
+  
+  for(int first = ; a )
+  
+  return false;
+}
+
 void randomizeTriangle() {
   int low = -width/2;
   int high = width/2;
