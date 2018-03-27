@@ -106,6 +106,23 @@ boolean orientation(Vector v1, Vector v2, Vector v3){
   return ((frame.coordinatesOf(v1).x()-frame.coordinatesOf(v3).x())*(frame.coordinatesOf(v2).y()-frame.coordinatesOf(v3).y()))- ((frame.coordinatesOf(v1).y()-frame.coordinatesOf(v3).y())*(frame.coordinatesOf(v2).x()-frame.coordinatesOf(v3).x()))>0; 
 }
 
+boolean insideAngle(Vector v1, Vector v3, Vector x){
+  
+  boolean xfound = false;
+  boolean yfound = false;
+  
+  for( float a = 0; a<= 1; a+=0.1){
+    for(float b = 0; b<= 1; b+= 0.1){
+      if (frame.coordinatesOf(v1).x()*a + frame.coordinatesOf(v3).x()*b == frame.coordinatesOf(x).x())
+          xfound = true;
+      if (frame.coordinatesOf(v1).y()*a + frame.coordinatesOf(v3).y()*b == frame.coordinatesOf(x).y())
+      if(xfound == yfound == true)
+        return true;
+    }
+  }
+  return false;
+}
+
 
 void startSearchingAndRastering(){ 
   
@@ -121,7 +138,7 @@ void startSearchingAndRastering(){
   
   for(float x = minx; x<= maxx; ++x){
     for(float y = miny; y<= maxy; ++y){
-       if(orientation(v1,v2,new Vector(x,y)) == orientation(v2,v3,new Vector(x,y)) == orientation(v3,v1,new Vector(x,y)) == orientation(v1,v2,v3))
+       if(insideAngle(v1,v3,new Vector(x,y))&&insideAngle(v1,v2,new Vector(x,y))&&insideAngle(v3,v2,new Vector(x,y)))
          point(x,y);
     }  
   }
