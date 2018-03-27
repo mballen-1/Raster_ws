@@ -78,7 +78,7 @@ void triangleRaster() {
   stroke(0, 255, 255, 125);
   //System.out.println("Preparing function");
   
-  //startSearchingAndRastering(); 
+  startSearchingAndRastering(); 
   popStyle();
    
   if (debug) {
@@ -90,36 +90,20 @@ void triangleRaster() {
   }
 }
 
-Vector findLimitOfTwoVectors(Vector a, Vector b, String search, String instruction){
-  if(search == "x"){
-    if(instruction == "min"){
-      if(a.x() < b.x()){
-       return a;
-      }
-      return b;
-    }
-    if(instruction == "max"){
-      if(a.x() > b.x()){
-       return a;
-      }
-      return b;   
-    }    
+Float findLimitsBetweenTwoVectors(Vector a, Vector b, String coordinate, String instruction){
+  if(instruction == "max"){
+    if(coordinate == "x")
+      return max(frame.coordinatesOf(a).x(), frame.coordinatesOf(b).x());
+    else
+      return max(frame.coordinatesOf(a).y(), frame.coordinatesOf(b).y());
   }
   else{
-    if(instruction == "min"){
-      if(a.y() < b.y()){
-       return a;
-      }
-      return b;
-    }
-    if(instruction == "max"){
-      if(a.y() > b.y()){
-       return a;
-      }
-      return b;   
-    }
+    if(coordinate == "x")
+      return min(frame.coordinatesOf(a).x(), frame.coordinatesOf(b).x());
+    else    
+      return min(frame.coordinatesOf(a).y(), frame.coordinatesOf(b).y());    
   }
-  return new Vector(0,0);
+  
 }
 
 
