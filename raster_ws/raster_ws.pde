@@ -51,6 +51,7 @@ void setup() {
 
   // init the triangle that's gonna be rasterized
   randomizeTriangle();
+  
 }
 
 void draw() {
@@ -73,27 +74,49 @@ void draw() {
 void triangleRaster() {
   // frame.coordinatesOf converts from world to frame
   // here we convert v1 to illustrate the idea
+  pushStyle();
+  stroke(0, 255, 255, 125);
+  //System.out.println("Preparing function");
+  
+  //startSearchingAndRastering(); 
+  popStyle();
+   
   if (debug) {
     pushStyle();
     stroke(255, 255, 0, 125);
     point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
+    point((frame.coordinatesOf(v2).x()), (frame.coordinatesOf(v2).y()));
     popStyle();
   }
 }
 
-Vector findLowOfTwoVectors(Vector a, Vector b, String search){
+Vector findLimitOfTwoVectors(Vector a, Vector b, String search, String instruction){
   if(search == "x"){
-   if(a.x() < b.x()){
-     return a;
-   }
-    return b;
-  }
-  else{
-    if(search == "y"){
-      if(a.y() < b.y()){
-        return a;
+    if(instruction == "min"){
+      if(a.x() < b.x()){
+       return a;
       }
       return b;
+    }
+    if(instruction == "max"){
+      if(a.x() > b.x()){
+       return a;
+      }
+      return b;   
+    }    
+  }
+  else{
+    if(instruction == "min"){
+      if(a.y() < b.y()){
+       return a;
+      }
+      return b;
+    }
+    if(instruction == "max"){
+      if(a.y() > b.y()){
+       return a;
+      }
+      return b;   
     }
   }
   return new Vector(0,0);
@@ -101,21 +124,59 @@ Vector findLowOfTwoVectors(Vector a, Vector b, String search){
 
 
 Vector findLowXOfAll(){
-  return(findLowOfTwoVectors(findLowOfTwoVectors(v1,v2, "x"),v3, "x"));  
+  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "x", "min"),v3, "x", "min"));  
 }
 
 Vector findLowYOfAll(){
-  return(findLowOfTwoVectors(findLowOfTwoVectors(v1,v2, "y"),v3, "y"));  
+  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "y", "min"),v3, "y", "min"));  
+}
+
+Vector findHighXOfAll(){
+  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "x", "max"),v3, "x", "max"));  
+}
+
+Vector findHighYOfAll(){
+  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "y", "max"),v3, "y", "max"));  
+}
+
+boolean isInTriangle(float x, float y){
+  for(float a = 0; a <1 ; a += 0.001){
+    for(float b = 0; b <1 ; a += 0.001){
+      for(float c = 0; c <1 ; a += 0.001){
+         //System.out.println("Inside triangle raster");
+        if (x == a*v1.x()+ b*v2.x() + c*v3.x() && y == a*v1.y()+ b*v2.y() + c*v3.y() && a+b+c == 1){
+           System.out.println("Found point");
+          return true;
+        }
+        if(a == 0.3 && b == 0.3 && c == 0.3){
+          return true;
+        }
+        
+      }
+    }
+  
+  }
+  
+  return true;
 }
 
 
-
-boolean isInTriangle(Vector x, Vector y){
+void startSearchingAndRastering(){
   
-  for(int first = ; a )
   
-  return false;
+  
+  for(float x = -width/2; x<= width/2; ++x){
+    for(float y = -width/2; y<= width/2; ++y){
+      
+       System.out.println("Inside search");
+        if(isInTriangle( x,y)){
+         
+          point(x,y);        
+        }    
+    }  
+  }
 }
+
 
 void randomizeTriangle() {
   int low = -width/2;
@@ -145,6 +206,13 @@ void spin() {
   else
     scene.eye().rotate(new Quaternion(yDirection ? new Vector(0, 1, 0) : new Vector(1, 0, 0), PI / 100), scene.anchor());
 }
+
+void mouseClicked(){
+  System.out.println("x:"+mouseX);
+  System.out.println("y:"+mouseY);
+}
+
+
 
 void keyPressed() {
   if (key == 'g')
