@@ -19,6 +19,16 @@ boolean debug = true;
 
 // 3. Use FX2D, JAVA2D, P2D or P3D
 String renderer = P3D;
+float v1x;
+float v1y;
+float v2x;
+float v2y;
+float v3x;
+float v3y;
+float minx;
+float maxx;
+float miny;
+float maxy;
 
 void setup() {
   //use 2^n to change the dimensions
@@ -85,80 +95,37 @@ void triangleRaster() {
     pushStyle();
     stroke(255, 255, 0, 125);
     point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
-    point((frame.coordinatesOf(v2).x()), (frame.coordinatesOf(v2).y()));
+    point(round(frame.coordinatesOf(v2).x()), round(frame.coordinatesOf(v2).y()));
+    point(round(frame.coordinatesOf(v3).x()), round(frame.coordinatesOf(v3).y()));
     popStyle();
   }
 }
 
-Float findLimitsBetweenTwoVectors(Vector a, Vector b, String coordinate, String instruction){
-  if(instruction == "max"){
-    if(coordinate == "x")
-      return max(frame.coordinatesOf(a).x(), frame.coordinatesOf(b).x());
-    else
-      return max(frame.coordinatesOf(a).y(), frame.coordinatesOf(b).y());
-  }
-  else{
-    if(coordinate == "x")
-      return min(frame.coordinatesOf(a).x(), frame.coordinatesOf(b).x());
-    else    
-      return min(frame.coordinatesOf(a).y(), frame.coordinatesOf(b).y());    
-  }
-  
+boolean orientation(Vector v1, Vector v2, Vector v3){
+  //(A1.x - A3.x) * (A2.y - A3.y) - (A1.y - A3.y) * (A2.x - A3.x) 
+  return ((frame.coordinatesOf(v1).x()-frame.coordinatesOf(v3).x())*(frame.coordinatesOf(v2).y()-frame.coordinatesOf(v3).y()))- ((frame.coordinatesOf(v1).y()-frame.coordinatesOf(v3).y())*(frame.coordinatesOf(v2).x()-frame.coordinatesOf(v3).x()))>0; 
 }
 
 
-Vector findLowXOfAll(){
-  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "x", "min"),v3, "x", "min"));  
-}
-
-Vector findLowYOfAll(){
-  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "y", "min"),v3, "y", "min"));  
-}
-
-Vector findHighXOfAll(){
-  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "x", "max"),v3, "x", "max"));  
-}
-
-Vector findHighYOfAll(){
-  return(findLimitOfTwoVectors(findLimitOfTwoVectors(v1,v2, "y", "max"),v3, "y", "max"));  
-}
-
-boolean isInTriangle(float x, float y){
-  for(float a = 0; a <1 ; a += 0.001){
-    for(float b = 0; b <1 ; a += 0.001){
-      for(float c = 0; c <1 ; a += 0.001){
-         //System.out.println("Inside triangle raster");
-        if (x == a*v1.x()+ b*v2.x() + c*v3.x() && y == a*v1.y()+ b*v2.y() + c*v3.y() && a+b+c == 1){
-           System.out.println("Found point");
-          return true;
-        }
-        if(a == 0.3 && b == 0.3 && c == 0.3){
-          return true;
-        }
-        
-      }
-    }
+void startSearchingAndRastering(){ 
   
-  }
+  minx = min(frame.coordinatesOf(v1).x(), frame.coordinatesOf(v2).x(), frame.coordinatesOf(v3).x());
+  maxx = max(frame.coordinatesOf(v1).x(), frame.coordinatesOf(v2).x(), frame.coordinatesOf(v3).x());
+  miny = min(frame.coordinatesOf(v1).y(), frame.coordinatesOf(v2).y(), frame.coordinatesOf(v3).y());
+  maxy = max(frame.coordinatesOf(v1).y(), frame.coordinatesOf(v2).y(), frame.coordinatesOf(v3).y());
   
-  return true;
-}
-
-
-void startSearchingAndRastering(){
+  pushStyle();
+  noFill();
+  strokeWeight(5);
+  stroke(0, 255, 255); 
   
-  
-  
-  for(float x = -width/2; x<= width/2; ++x){
-    for(float y = -width/2; y<= width/2; ++y){
-      
-       System.out.println("Inside search");
-        if(isInTriangle( x,y)){
-         
-          point(x,y);        
-        }    
+  for(float x = minx; x<= maxx; ++x){
+    for(float y = miny; y<= maxy; ++y){
+       if(orientation(v1,v2,new Vector(x,y)) == orientation(v2,v3,new Vector(x,y)) == orientation(v3,v1,new Vector(x,y)) == orientation(v1,v2,v3))
+         point(x,y);
     }  
   }
+  popStyle();
 }
 
 
@@ -168,6 +135,12 @@ void randomizeTriangle() {
   v1 = new Vector(random(low, high), random(low, high));
   v2 = new Vector(random(low, high), random(low, high));
   v3 = new Vector(random(low, high), random(low, high));
+  v1x = frame.coordinatesOf(v1).x();
+  v1y = frame.coordinatesOf(v1).y();
+  v2x = frame.coordinatesOf(v2).x();
+  v2y = frame.coordinatesOf(v2).y();
+  v3x = frame.coordinatesOf(v3).x();
+  v3y = frame.coordinatesOf(v3).y();  
 }
 
 void drawTriangleHint() {
