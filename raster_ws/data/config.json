@@ -10,9 +10,9 @@
     "position": [
       0,
       0,
-      512
+      256
     ]
   },
-  "radius": 512,
+  "radius": 256,
   "type": "ORTHOGRAPHIC"
 }

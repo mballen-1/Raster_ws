@@ -14,25 +14,15 @@ int n = 4;
 
 // 2. Hints
 boolean triangleHint = true;
-boolean gridHint = true;
+boolean gridHint = false;
 boolean debug = true;
 
 // 3. Use FX2D, JAVA2D, P2D or P3D
 String renderer = P3D;
-float v1x;
-float v1y;
-float v2x;
-float v2y;
-float v3x;
-float v3y;
-float minx;
-float maxx;
-float miny;
-float maxy;
 
 void setup() {
   //use 2^n to change the dimensions
-  size(1024, 1024, renderer);
+  size(512, 512, renderer);
   scene = new Scene(this);
   if (scene.is3D())
     scene.setType(Scene.Type.ORTHOGRAPHIC);
@@ -61,7 +51,6 @@ void setup() {
 
   // init the triangle that's gonna be rasterized
   randomizeTriangle();
-  
 }
 
 void draw() {
@@ -79,72 +68,118 @@ void draw() {
   popMatrix();
 }
 
+// Con esta función calculamos las funciones de los ejes
+/*
+float edgeFuction(float v1x, float v1y, float v2x, float v2y, float px,float py){
+return ((v1y-v2y)*px + (v2x-v1x)*py + (v1x*v2y - v1y*v2x));
+}
+*/
+float edgeFuction(float v1x, float v1y, float v2x, float v2y, float px,float py){
+return (((v2x-v1x)*(py-v1y))-((v2y-v1y)*(px-v1x)));
+}
+
+// Verificamos si un punto esta dentro o no del triangulo
+boolean inside_triangle(float ax, float ay, float bx, float by, float cx, float cy, float x, float y)
+{
+  float d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy);
+  float alpha = ((by-cy)*(x-cx)+(cx-bx)*(y-cy)) / d;
+  float beta = ((cy-ay)*(x-cx)+(ax-cx)*(y-cy)) / d;
+  float gamma = 1.0 - alpha - beta;
+
+  return !(alpha < 0 || alpha > 1 || beta < 0 || beta > 1 || gamma < 0 || gamma > 1);
+}
+
+
+
 // Implement this function to rasterize the triangle.
 // Coordinates are given in the frame system which has a dimension of 2^n
 void triangleRaster() {
   // frame.coordinatesOf converts from world to frame
-  // here we convert v1 to illustrate the idea
-  pushStyle();
-  stroke(0, 255, 255, 125);
-  //System.out.println("Preparing function");
   
-  startSearchingAndRastering(); 
-  popStyle();
-   
+  float v1x = frame.coordinatesOf(v1).x();
+  float v1y = frame.coordinatesOf(v1).y();
+  float v2x = frame.coordinatesOf(v2).x();
+  float v2y = frame.coordinatesOf(v2).y();
+  float v3x = frame.coordinatesOf(v3).x();
+  float v3y = frame.coordinatesOf(v3).y();  
+  // Valores minimo y maximo de los pixeles en el triangulo
+  int minx=round(min(v1x,v2x,v3x));
+  int miny=round(min(v1y,v2y,v3y));
+  int maxx=round(max(v1x,v2x,v3x));
+  int maxy=round(max(v1y,v2y,v3y));
+
+  
   if (debug) {
-    pushStyle();
+    pushStyle();    
     stroke(255, 255, 0, 125);
-    point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
-    point(round(frame.coordinatesOf(v2).x()), round(frame.coordinatesOf(v2).y()));
-    point(round(frame.coordinatesOf(v3).x()), round(frame.coordinatesOf(v3).y()));
-    popStyle();
-  }
-}
-
-boolean orientation(Vector v1, Vector v2, Vector v3){
-  //(A1.x - A3.x) * (A2.y - A3.y) - (A1.y - A3.y) * (A2.x - A3.x) 
-  return ((frame.coordinatesOf(v1).x()-frame.coordinatesOf(v3).x())*(frame.coordinatesOf(v2).y()-frame.coordinatesOf(v3).y()))- ((frame.coordinatesOf(v1).y()-frame.coordinatesOf(v3).y())*(frame.coordinatesOf(v2).x()-frame.coordinatesOf(v3).x()))>0; 
-}
-
-boolean insideAngle(Vector v1, Vector v3, Vector x){
-  
-  boolean xfound = false;
-  boolean yfound = false;
-  
-  for( float a = 0; a<= 1; a+=0.1){
-    for(float b = 0; b<= 1; b+= 0.1){
-      if (frame.coordinatesOf(v1).x()*a + frame.coordinatesOf(v3).x()*b == frame.coordinatesOf(x).x())
-          xfound = true;
-      if (frame.coordinatesOf(v1).y()*a + frame.coordinatesOf(v3).y()*b == frame.coordinatesOf(x).y())
-      if(xfound == yfound == true)
-        return true;
+    //point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
+    // Vector 1 rojo
+    stroke(255, 0, 0);
+    point(round(v1x),round(v1y));
+    // Vector 2 verde
+    stroke(0, 255, 0);
+    point(round(v2x),round(v2y));
+    // Vector 3 azul
+    stroke(0, 0, 255);    
+    point(round(v3x),round(v3y));
+    
+      
+   //strokeWeight(0);
+   //fill(255,0,255);
+   
+   int paso=4;
+  for(int x=minx; x<maxx; x++){
+    for(int y=miny; y<maxy; y++){
+      //funciones de los ejes
+        float f12;
+        float f23;
+        float f31;
+        //area del trapezoide
+        float areax2;
+        // Pesos normalizados
+        float w1;
+        float w2;
+        float w3;
+        // Colores 
+        float color1=0.0;
+        float color2=0.0;
+        float color3=0.0;
+        noStroke();
+        // Verificamos cada pixel
+             
+        for(float subx=0; subx<1; subx+=(float)1/paso){
+          for(float suby=0; suby<1; suby+=(float)1/paso){                       
+            if (inside_triangle(v1x, v1y, v2x,v2y,v3x,v3y,(x+subx),(y+suby))){
+              
+              f12 = edgeFuction(v1x,v1y,v2x,v2y,(x+subx),(y+suby));
+              f23 = edgeFuction(v2x,v2y,v3x,v3y,(x+subx),(y+suby));
+              f31 = edgeFuction(v3x,v3y,v1x,v1y,(x+subx),(y+suby));
+              areax2=abs(f12)+abs(f23)+abs(f31);
+              
+              w1= (f23)/areax2;
+              w2=(f31)/areax2;
+              w3=(f12)/areax2;
+              
+              color1+= abs(w1*255);
+              color2+= abs(w2*255);
+              color3+= abs(w3*255);
+              
+            } 
+          }
+        }      
+        
+        color1 /= Math.pow(paso,2);
+        color2 /= Math.pow(paso,2);
+        color3 /= Math.pow(paso,2);
+        fill(round(color1),round(color2),round(color3));
+        rect(x,y,1,1);
+        
     }
-  }
-  return false;
-}
-
-
-void startSearchingAndRastering(){ 
-  
-  minx = min(frame.coordinatesOf(v1).x(), frame.coordinatesOf(v2).x(), frame.coordinatesOf(v3).x());
-  maxx = max(frame.coordinatesOf(v1).x(), frame.coordinatesOf(v2).x(), frame.coordinatesOf(v3).x());
-  miny = min(frame.coordinatesOf(v1).y(), frame.coordinatesOf(v2).y(), frame.coordinatesOf(v3).y());
-  maxy = max(frame.coordinatesOf(v1).y(), frame.coordinatesOf(v2).y(), frame.coordinatesOf(v3).y());
-  
-  pushStyle();
-  noFill();
-  strokeWeight(5);
-  stroke(0, 255, 255); 
-  
-  for(float x = minx; x<= maxx; ++x){
-    for(float y = miny; y<= maxy; ++y){
-       if(insideAngle(v1,v3,new Vector(x,y))&&insideAngle(v1,v2,new Vector(x,y))&&insideAngle(v3,v2,new Vector(x,y)))
-         point(x,y);
-    }  
-  }
+  }  
   popStyle();
+    
+  }
 }
-
 
 void randomizeTriangle() {
   int low = -width/2;
@@ -152,12 +187,6 @@ void randomizeTriangle() {
   v1 = new Vector(random(low, high), random(low, high));
   v2 = new Vector(random(low, high), random(low, high));
   v3 = new Vector(random(low, high), random(low, high));
-  v1x = frame.coordinatesOf(v1).x();
-  v1y = frame.coordinatesOf(v1).y();
-  v2x = frame.coordinatesOf(v2).x();
-  v2y = frame.coordinatesOf(v2).y();
-  v3x = frame.coordinatesOf(v3).x();
-  v3y = frame.coordinatesOf(v3).y();  
 }
 
 void drawTriangleHint() {
@@ -180,13 +209,6 @@ void spin() {
   else
     scene.eye().rotate(new Quaternion(yDirection ? new Vector(0, 1, 0) : new Vector(1, 0, 0), PI / 100), scene.anchor());
 }
-
-void mouseClicked(){
-  System.out.println("x:"+mouseX);
-  System.out.println("y:"+mouseY);
-}
-
-
 
 void keyPressed() {
   if (key == 'g')
